@@ -149,7 +149,7 @@
             document.getElementById("whisperRow").classList.remove("hidden"); // ✅ 여기!  닉네임 작성
 
 
-            stompClient.subscribe(`/topic/${roomId}`, function (chat) {
+            stompClient.subscribe(`/topic/room.${roomId}`, function (chat) {
                 const message = JSON.parse(chat.body);
                 showMessage(message.from, message.message);
             });
@@ -161,8 +161,6 @@
                 alert("💬 귓속말: " + msg.from + " - " + msg.message);
             });
         });
-
-
     }
 
     function disconnect() {
