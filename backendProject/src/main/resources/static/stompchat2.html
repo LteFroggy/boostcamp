@@ -58,14 +58,8 @@
 
     <!-- 입장 영역 -->
     <div class="row" id="enterRow">
-        <div class = "col">
-            <strong> 닉네임 </strong>
-            <input type="text" id="user">
-        </div>
-        <div class = "col">
-            <strong> 방 번호 </strong>
-            <input type="text" id="room">
-        </div>
+        <input type="text" id="user" placeholder="닉네임">
+        <input type="text" id="room" placeholder="방 번호">
         <button onclick="connect()">Connect</button>
     </div>
 
@@ -110,7 +104,7 @@
                     data.forEach(room => {
                         const div = document.createElement("div");
                         div.className = "room-item";
-                        div.textContent = `방 이름: ${room.roomId}`;
+                        div.textContent = `방 번호: ${room.roomId}`;
                         div.onclick = () => {
                             const nick = prompt("닉네임을 입력하세요:");
                             if (!nick) return;
@@ -137,7 +131,7 @@
         //방생성기능
         fetch(`/api/rooms/${roomId}`, { method: "POST" })
 
-        // const socket = new WebSocket('/ws-chat');
+        //  const socket = new WebSocket('/ws-chat');
         const socket = new WebSocket('/ws-chat?nickname=' + nickname);
         stompClient = Stomp.over(socket);
 
@@ -146,21 +140,25 @@
             document.getElementById("chatWrapper").classList.remove("hidden");
             document.getElementById("enterRow").classList.add("hidden");
             document.getElementById("roomList").classList.add("hidden");
+
             document.getElementById("whisperRow").classList.remove("hidden"); // ✅ 여기!  닉네임 작성
 
 
+            //일반채팅
             stompClient.subscribe(`/topic/room.${roomId}`, function (chat) {
                 const message = JSON.parse(chat.body);
                 showMessage(message.from, message.message);
             });
-
 
             //귓속말
             stompClient.subscribe('/user/queue/private', function (message) {
                 const msg = JSON.parse(message.body);
                 alert("💬 귓속말: " + msg.from + " - " + msg.message);
             });
+
         });
+
+
     }
 
     function disconnect() {
@@ -177,6 +175,7 @@
 
     function sendMessage() {
         const msg = document.getElementById("msg").value;
+
         const toUser = document.getElementById("whisperTo").value.trim();
 
         if (!nickname || !msg || !roomId) {

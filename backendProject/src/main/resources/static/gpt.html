@@ -98,7 +98,6 @@
             showSystemMsg("방 [" + room + "]에 입장하였습니다.");
         });
     }
-
     function showMessage(from, message) {
         const messagesDiv = document.getElementById('messages');
         const msgElem = document.createElement('div');
@@ -109,7 +108,6 @@
         messagesDiv.appendChild(msgElem);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
-
     function showSystemMsg(message) {
         const messagesDiv = document.getElementById('messages');
         const msgElem = document.createElement('div');
@@ -117,7 +115,6 @@
         messagesDiv.appendChild(msgElem);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
-
     document.getElementById('roomForm').onsubmit = function (e) {
         e.preventDefault();
         roomName = document.getElementById('roomInput').value.trim();
