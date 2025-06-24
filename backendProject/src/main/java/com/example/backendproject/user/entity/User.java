@@ -1,18 +1,22 @@
 package com.example.backendproject.user.entity;
 
 import com.example.backendproject.auth.entity.Auth;
+import com.example.backendproject.board.entity.Board;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Entity
-public class User {
+public class User extends BaseTime{
 
     // ID는 PK임을 의미함
     // IDENTITY는 Auto-incresement
@@ -34,5 +38,8 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Auth auth;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Board> boards = new ArrayList<>();
 
 }

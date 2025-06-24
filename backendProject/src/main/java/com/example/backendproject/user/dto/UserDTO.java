@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,9 +15,5 @@ public class UserDTO {
     private Long id;
     private String userid;
 
-    private String username;
-    private String email;
-    private String phone;
-    private String address;
-
+    private UserProfileDTO profile;  // 추가
 }

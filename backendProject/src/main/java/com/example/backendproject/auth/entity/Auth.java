@@ -27,8 +27,9 @@ public class Auth {
     @Column(nullable = false)
     private String refreshToken;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    // 테이블과 테이블을 연결, 1:1관계에서는 주인쪽만 패치전략 적용됨
+    @OneToOne(fetch = FetchType.LAZY) // 지연로딩 적용 -> Auth 엔티티 조회시에 user객체는 불러오지 않는다.
+    @JoinColumn(name = "user_id") // Auth.getUser()에 실제 접근 시에 User쿼리 발생!
     private User user;
 
 }
