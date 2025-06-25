@@ -128,6 +128,16 @@
     //은식추가    //은식추가
     //은식추가
 
+
+    // 디바운싱 추가
+    let debounceTimer;
+    function debounceSearchPosts() {
+        clearTimeout(decounceTimer);
+        debounceTimer = setTimeout(() => {
+            searchPosts(0);
+        }, 200); // 300ms 동안 입력이 없다면, searchPosts 실행
+    }
+
     //페이징 적용후
     //페이징 적용
     function searchPosts(page = 0) {
