@@ -1,6 +1,8 @@
 package com.example.backendproject.board.controller;
 
 import com.example.backendproject.board.entity.Board;
+import com.example.backendproject.security.core.CustomUserDetails;
+import com.example.backendproject.user.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +12,9 @@ import com.example.backendproject.board.service.BoardService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -22,26 +23,42 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final UserRepository userRepository;
 
 
     /** 글 작성 **/
     @PostMapping
-    public ResponseEntity<BoardDTO> createBoard(@RequestBody BoardDTO boardDTO) throws JsonProcessingException {
-        System.out.println("boardDTO 값 "+new ObjectMapper().writeValueAsString(boardDTO));
+    public ResponseEntity<BoardDTO> createBoard(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody BoardDTO boardDTO) throws JsonProcessingException {
+        Long id = customUserDetails.getId();
+        boardDTO.setUser_id(id);
         BoardDTO created = boardService.createBoard(boardDTO);
+
+        System.out.println("boardDTO 값 "+new ObjectMapper().writeValueAsString(boardDTO));
+
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /** 게시글 상세 조회 **/
     @GetMapping("/{id}")
-    public ResponseEntity<BoardDTO> getBoardDetail(@PathVariable Long id) {
+    public ResponseEntity<BoardDTO> getBoardDetail(@AuthenticationPrincipal CustomUserDetails customUserDetails, @PathVariable Long id) throws JsonProcessingException {
+        Long userid = customUserDetails.getId();
+        if (userRepository.findById(userid).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         return ResponseEntity.ok(boardService.getBoardDetail(id));
     }
 
     /** 게시글 수정 **/
-    @PutMapping("/{id}")
-    public ResponseEntity<BoardDTO> updateBoard(@PathVariable Long id, @RequestBody BoardDTO boardDTO) {
-        return ResponseEntity.ok(boardService.updateBoard(id, boardDTO));
+    @PutMapping("/{boardId}")
+    public ResponseEntity<BoardDTO> updateBoard(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @RequestBody BoardDTO boardDTO) {
+        Long currentUserid = customUserDetails.getId();
+        boardDTO.setUser_id(currentUserid);
+        return ResponseEntity.ok(boardService.updateBoard(boardId, boardDTO));
     }
 
     /** 게시글 삭제 **/
@@ -50,9 +67,6 @@ public class BoardController {
         boardService.deleteBoard(id);
         return ResponseEntity.noContent().build();
     }
-
-
-
 
 //    //페이징 적용 전
 //    @GetMapping
@@ -65,11 +79,6 @@ public class BoardController {
 //    public List<BoardDTO> search(@RequestParam String keyword) {
 //        return boardService.searchBoards(keyword);
 //    }
-
-
-
-
-
 
     /** 페이징 적용 **/
     /** 페이징 적용 **/
@@ -95,8 +104,6 @@ public class BoardController {
     ) {
         return boardService.searchBoardsPage(keyword, page, size);
     }
-
-
 
 
     /** 게시판 글 쓰기 배치 작업 **/

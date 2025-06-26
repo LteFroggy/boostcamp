@@ -52,7 +52,6 @@ public class BoardService {
         return toDTO(saved);
     }
 
-
     /** 게시글 상세 조회 **/
     @Transactional(readOnly = true)
     public BoardDTO getBoardDetail(Long boardId) {
@@ -66,8 +65,17 @@ public class BoardService {
     public BoardDTO updateBoard(Long boardId, BoardDTO dto) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음: " + boardId));
+
+        // 글의 주인이 아닌 사람이 수정 요청한다면, Exception 던지기
+        if (!board.getUser().getId().equals(dto.getUser_id())) {
+            throw new IllegalArgumentException("수정한 유저가 올바르지 않습니다");
+        }
+
+        // 제목, 내용, 업데이트 날짜 수정
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
+        board.setUpdated_date(dto.getUpdated_date());
+
         boardRepository.save(board);
         return toDTO(board);
     }
@@ -96,8 +104,6 @@ public class BoardService {
 //    public List<BoardDTO> searchBoards(String keyword) {
 //        return boardRepository.searchKeyword(keyword);
 //    }
-
-
 
 
     /** 페이징 적용 후 **/

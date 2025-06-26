@@ -2,6 +2,7 @@ package com.example.backendproject.user.entity;
 
 import com.example.backendproject.auth.entity.Auth;
 import com.example.backendproject.board.entity.Board;
+import com.example.backendproject.security.core.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +30,11 @@ public class User extends BaseTime{
 
     @Column(nullable = false)
     private String password;
+
+    // 0625 10:15 수정
+    // 이 필드를 DB에 문자열로 저장하라는 의미이다.
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     // mappedBy는 나를 참조하고 있는 field명, UserProfile에서 Field명을 user로 작성했기에 이리 씀
     // Cascade는 원문 삭제하면 키도 사라지기

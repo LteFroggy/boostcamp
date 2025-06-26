@@ -1,10 +1,12 @@
 package com.example.backendproject.user.controller;
 
 
+import com.example.backendproject.security.core.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import com.example.backendproject.user.dto.UserDTO;
 import com.example.backendproject.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,15 +26,18 @@ public class UserController {
     private final UserService userService;
 
     /** 내 정보 보기 **/
-    @GetMapping("/me/{id}")
-    public ResponseEntity<UserDTO> getMyInfo(@PathVariable("id") Long userId) {
-        return ResponseEntity.ok(userService.getMyInfo(userId));
+    // 인증된 사용자만 접근 가능하도록 수정
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> getMyInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        Long id = customUserDetails.getId();
+        return ResponseEntity.ok(userService.getMyInfo(id));
     }
 
     /** 유저 정보 수정 **/
-    @PutMapping("/me/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable("id") Long userId, @RequestBody UserDTO dto)  {
-        UserDTO updated = userService.updateUser(userId, dto);
+    @PutMapping("/me")
+    public ResponseEntity<UserDTO> updateUser(@AuthenticationPrincipal CustomUserDetails customUserDetails, @RequestBody UserDTO userDTO)  {
+        Long id = customUserDetails.getId();
+        UserDTO updated = userService.updateUser(id, userDTO);
         return ResponseEntity.ok(updated);
     }
 
