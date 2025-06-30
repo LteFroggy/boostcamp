@@ -40,6 +40,4 @@ public class UserController {
         UserDTO updated = userService.updateUser(id, userDTO);
         return ResponseEntity.ok(updated);
     }
-
-
 }

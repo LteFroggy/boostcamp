@@ -9,8 +9,6 @@ import com.example.backendproject.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import com.example.backendproject.auth.dto.LoginRequestDTO;
 import com.example.backendproject.auth.dto.SignUpRequestDTO;
-import com.example.backendproject.user.dto.UserDTO;
-import com.example.backendproject.user.dto.UserProfileDTO;
 import com.example.backendproject.user.entity.User;
 import com.example.backendproject.user.entity.UserProfile;
 import com.example.backendproject.user.repository.UserRepository;
@@ -61,7 +59,6 @@ public class AuthService {
         user.setUserProfile(profile);
 
         userRepository.save(user);
-
     }
 
 

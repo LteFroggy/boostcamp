@@ -5,9 +5,7 @@ import com.example.backendproject.user.dto.UserProfileDTO;
 import com.example.backendproject.user.entity.User;
 import com.example.backendproject.user.entity.UserProfile;
 import com.example.backendproject.user.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

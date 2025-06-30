@@ -15,4 +15,7 @@ public interface AuthRepository extends JpaRepository<Auth, Long>{
 
     // refreshtoken 바탕으로 인증정보가 있는지 조회
     Optional<Auth> findByRefreshToken(String refreshToken);
+
+    // 유저로 인증정보 찾기
+    Optional<Auth> findByUser(User user);
 }

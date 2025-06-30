@@ -1,8 +1,9 @@
 package com.example.backendproject.board.service;
 
+import com.example.backendproject.board.elasticsearch.dto.BoardEsDocument;
+import com.example.backendproject.board.elasticsearch.service.BoardEsService;
 import com.example.backendproject.board.entity.Board;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.example.backendproject.board.dto.BoardDTO;
@@ -25,12 +26,18 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
-    private final BatchRepository batchRepositoty;
+    private final BatchRepository batchRepository;
     private final EntityManager em;
+
+    // ElasticSearch Service 객체
+    private final BoardEsService boardEsService;
 
     /** 글 등록 **/
     @Transactional
     public BoardDTO createBoard(BoardDTO boardDTO) {
+
+        long start = System.currentTimeMillis(); // 메소드 시작 시간
+        System.out.println("글 작성 메소드 시작");
 
         // userId(PK)를 이용해서 User 조회
         if (boardDTO.getUser_id() == null)
@@ -48,6 +55,23 @@ public class BoardService {
         // 연관관계 매핑!
         board.setUser(user);
         Board saved = boardRepository.save(board);
+        // mySql 저장 완료
+
+        // ElasticSearch에 저장 시작
+        BoardEsDocument boardEsDocument = BoardEsDocument.builder()
+                .id(String.valueOf(board.getId()))
+                .title(board.getTitle())
+                .content(board.getContent())
+                .userId(board.getUser().getId())
+                .username(board.getUser().getUserProfile().getUsername())
+                .created_date(String.valueOf(board.getCreated_date()))
+                .updated_date(String.valueOf(board.getUpdated_date()))
+                .build();
+
+        boardEsService.save(boardEsDocument);
+        // 저장 완료
+
+        //BoardEsDocument boardEsDocument = BoardEsDocument.from(boardDTO);
 
         return toDTO(saved);
     }
@@ -63,6 +87,10 @@ public class BoardService {
     /** 게시글 수정 **/
     @Transactional
     public BoardDTO updateBoard(Long boardId, BoardDTO dto) {
+
+        long start = System.currentTimeMillis(); // 메소드 시작 시간
+        System.out.println("글 수정 메소드 시작");
+
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음: " + boardId));
 
@@ -75,17 +103,40 @@ public class BoardService {
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
         board.setUpdated_date(dto.getUpdated_date());
-
         boardRepository.save(board);
+
+        // ElasticSearch에 저장 시작
+        BoardEsDocument boardEsDocument = BoardEsDocument.builder()
+                .id(String.valueOf(board.getId()))
+                .title(board.getTitle())
+                .content(board.getContent())
+                .userId(board.getUser().getId())
+                .username(board.getUser().getUserProfile().getUsername())
+                .created_date(String.valueOf(board.getCreated_date()))
+                .updated_date(String.valueOf(board.getUpdated_date()))
+                .build();
+
+        boardEsService.save(boardEsDocument);
+
+
         return toDTO(board);
     }
 
 
     /** 게시글 삭제 **/
     @Transactional
-    public void deleteBoard(Long boardId) {
+    public void deleteBoard(Long boardId, Long userid) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("삭제하려는 게시물이 존재하지 않습니다."));
+
+        if (!board.getUser().getId().equals(userid)) {
+            throw new  IllegalArgumentException("삭제 권한이 없습니다");
+        }
+
         if (!boardRepository.existsById(boardId))
             throw new IllegalArgumentException("게시글 없음: " + boardId);
+
+        boardEsService.deleteById(String.valueOf(boardId));
         boardRepository.deleteById(boardId);
     }
 
@@ -162,7 +213,7 @@ public class BoardService {
 
 
             // 1. MySQL로 INSERT
-            batchRepositoty.batchInsert(batchList);
+            batchRepository.batchInsert(batchList);
 
         }
 

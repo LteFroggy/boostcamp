@@ -4,10 +4,9 @@ import com.example.backendproject.auth.dto.LoginRequestDTO;
 import com.example.backendproject.auth.dto.LoginResponseDTO;
 import com.example.backendproject.auth.dto.SignUpRequestDTO;
 import com.example.backendproject.auth.service.AuthService;
-import com.example.backendproject.user.dto.UserDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +22,13 @@ public class AuthController {
 
     private final AuthService authService;
 
+
+
     /** 회원가입 **/
     @PostMapping("/signUp")
     public ResponseEntity<String> signUp(@RequestBody SignUpRequestDTO signUpRequestDTO) {
-        try {
-            authService.signUp(signUpRequestDTO);
-            return ResponseEntity.ok("회원가입 성공");
-        }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        authService.signUp(signUpRequestDTO);
+        return ResponseEntity.ok("회원가입 성공");
     }
 
     /**
@@ -92,4 +88,30 @@ public class AuthController {
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+
+        // accessToken 쿠키 삭제
+        Cookie accessTokenCookie = new Cookie("accessToken", null);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(0); // 즉시 만료!
+
+        // refreshToken 쿠키 삭제
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(0);
+
+        // 응답에 쿠키 삭제 포함
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
+
+        // (추가) 서버 세션도 있다면 만료
+        // request.getSession().invalidate();
+
+        return ResponseEntity.ok().body("로그아웃 완료 (쿠키 삭제됨)");
+    }
+
 }

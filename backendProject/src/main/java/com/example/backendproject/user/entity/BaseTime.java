@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 public abstract class BaseTime {
 
-
     @CreationTimestamp
     private LocalDateTime created_date;
 
